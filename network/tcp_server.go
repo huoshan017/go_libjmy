@@ -51,9 +51,23 @@ func (this *TcpServer) Close() {
 func (this *TcpServer) listening_routine() {
 	var conn net.Conn
 	var err error
+	var tempDelay time.Duration
 	for {
 		conn, err = this.listener.Accept()
 		if err != nil {
+			if ne, ok := err.(net.Error); ok && ne.Temporary() {
+				if tempDelay == 0 {
+					tempDelay = 5 * time.Millisecond
+				} else {
+					tempDelay *= 2
+				}
+				if max := 1 * time.Second; tempDelay > max {
+					tempDelay = max
+				}
+				fmt.Printf("accept error: %v; retrying in %v", err, tempDelay)
+				time.Sleep(tempDelay)
+				continue
+			}
 			fmt.Printf("listen failed, err(%v)", err.Error())
 			this.state = TCP_SERVER_STATE_CLOSING
 			break
