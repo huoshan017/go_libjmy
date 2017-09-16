@@ -9,6 +9,7 @@ import (
 )
 
 const DEFAULT_READ_BUFFER_SIZE = 4096
+const DEFAULT_SEND_CHANNEL_SIZE = 16
 
 // 连接类型
 const (
@@ -41,7 +42,7 @@ func (this *TcpConnection) Init(conn_type int, id uint32, conn_mgr *TcpConnectio
 	this.id = id
 	this.mgr = conn_mgr
 
-	this.send_chan = make(chan []byte, 16)
+	this.send_chan = make(chan []byte, DEFAULT_SEND_CHANNEL_SIZE)
 
 	fmt.Printf("connection %d inited\n", id)
 	return true
@@ -89,8 +90,7 @@ func (this *TcpConnection) Connect(addr string) bool {
 	}
 	this.conn_state = TCP_CONN_STATE_CONNECTED
 
-	var ei EventInfo
-	ei.init(this.id, this.mgr)
+	ei := EventInfo{conn_id: this.id, conn_mgr: this.mgr}
 	this.processor.OnConnect(&ei)
 
 	fmt.Printf("connected success\n")
@@ -103,16 +103,13 @@ func (this *TcpConnection) Start() bool {
 	}
 
 	buf := make([]byte, DEFAULT_READ_BUFFER_SIZE)
-	var ri RecvInfo
-	ri.init(this.id, this.mgr)
-	ri.data = buf
 
 	go func() {
 		for {
 			length, err := this.net_conn.Read(buf)
 			if err == nil {
 				if length > 0 {
-					ri.data_len = uint16(length)
+					ri := RecvInfo{conn_id: this.id, conn_mgr: this.mgr, data: buf, data_len: uint16(length)}
 					if !this.processor.OnRecv(&ri) {
 						fmt.Printf("OnRecv failed\n")
 					}
@@ -122,12 +119,10 @@ func (this *TcpConnection) Start() bool {
 				}
 			} else {
 				if err != io.EOF {
-					var ei ErrorInfo
-					ei.init(this.id, this.mgr, err)
+					ei := ErrorInfo{conn_id: this.id, conn_mgr: this.mgr, err: err}
 					this.processor.OnError(&ei)
 				} else {
-					var ei EventInfo
-					ei.init(this.id, this.mgr)
+					ei := EventInfo{conn_id: this.id, conn_mgr: this.mgr}
 					this.processor.OnDisconnect(&ei)
 					fmt.Printf("peer(%v) closed connection\n", this.net_conn.RemoteAddr().String())
 				}
@@ -145,9 +140,11 @@ func (this *TcpConnection) Start() bool {
 		for {
 			c := <-this.send_chan
 			if err := this.realSend(c); err != nil {
-				var ei ErrorInfo
-				ei.init(this.id, this.mgr, err)
+				ei := ErrorInfo{conn_id: this.id, conn_mgr: this.mgr, err: err}
 				this.processor.OnError(&ei)
+
+				this.conn_state = TCP_CONN_STATE_DISCONNECTED
+				this.mgr.PushDisconnId(this.id)
 				break
 			}
 		}
