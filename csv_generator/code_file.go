@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/huoshan017/go_libjmy/table"
@@ -19,6 +20,10 @@ const (
 	CSV_HEADER_COLUMNS_NAME_INDEX = 0
 	CSV_HEADER_COLUMNS_TYPE_INDEX = 1
 )
+
+func (this *CodeFile) GetFileName() string {
+	return this.file_name
+}
 
 func (this *CodeFile) LoadCsv(file string) bool {
 	cr := &table.CsvReader{}
@@ -108,7 +113,13 @@ func (this *CodeFile) Generate() bool {
 	this.code += ("  if !cr.Load(file) {\n")
 	this.code += ("    fmt.Println(\"load csv file %v failed\", file)\n")
 	this.code += ("    return false\n")
-	this.code += ("  }\n")
+	this.code += ("  }\n\n")
+	this.code += ("  data_row_num := cr.GetRowNum() - " + strconv.Itoa(CSV_HEADER_ROWS_NUM) + "\n")
+	this.code += ("  if data_row_num <= 0 {\n")
+	this.code += ("    fmt.Println(\"no data row\")\n")
+	this.code += ("    return false\n")
+	this.code += ("  }\n\n")
+	this.code += ("  ")
 	this.code += ("  return true")
 	this.code += ("}\n\n")
 
