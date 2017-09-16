@@ -69,7 +69,7 @@ func (this *CodeFile) Generate() bool {
 	}
 
 	if names_row.GetItemsNum() == 0 {
-		fmt.Println("csv file %v not include items", this.dest_file)
+		fmt.Println("csv file %v not include items", this.file_name)
 		return false
 	}
 
@@ -104,6 +104,16 @@ func (this *CodeFile) Generate() bool {
 
 	// load function
 	this.code += ("func (this *" + this.file_name + ") Load(file string) bool {\n")
+	this.code += ("  cr := &table.CsvReader{}\n")
+	this.code += ("  if !cr.Load(file) {\n")
+	this.code += ("    fmt.Println(\"load csv file %v failed\", file)\n")
+	this.code += ("    return false\n")
+	this.code += ("  }\n")
+	this.code += ("  return true")
+	this.code += ("}\n\n")
+
+	// close function
+	this.code += ("func (this *" + this.file_name + ") Close() {\n")
 	this.code += "}\n\n"
 
 	return true
