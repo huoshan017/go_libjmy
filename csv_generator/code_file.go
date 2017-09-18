@@ -16,9 +16,9 @@ type CodeFile struct {
 }
 
 const (
-	CSV_HEADER_ROWS_NUM           = 2
+	CSV_HEADER_ROWS_NUM           = 3
 	CSV_HEADER_COLUMNS_NAME_INDEX = 0
-	CSV_HEADER_COLUMNS_TYPE_INDEX = 1
+	CSV_HEADER_COLUMNS_TYPE_INDEX = 2
 )
 
 func (this *CodeFile) GetFileName() string {
