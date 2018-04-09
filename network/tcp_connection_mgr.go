@@ -30,7 +30,7 @@ func (this *TcpConnectionMgr) Init(conn_type int, max_conn uint32) bool {
 		if id == 0 {
 			return false
 		}
-		this.conns[i].Init(conn_type, id, this)
+		this.conns[i].InitWithId(conn_type, id, this)
 		this.free_indexes.PushBack(i)
 		this.id2idx[id] = i
 	}

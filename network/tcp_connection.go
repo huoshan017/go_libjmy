@@ -35,7 +35,12 @@ type TcpConnection struct {
 	conn_state int
 }
 
-func (this *TcpConnection) Init(conn_type int, id uint32, conn_mgr *TcpConnectionMgr) bool {
+func (this *TcpConnection) Init(conn net.Conn) {
+	this.net_conn = conn
+	this.conn_state = TCP_CONN_STATE_CONNECTED
+}
+
+func (this *TcpConnection) InitWithId(conn_type int, id uint32, conn_mgr *TcpConnectionMgr) bool {
 	this.conn_type = conn_type
 	this.conn_state = TCP_CONN_STATE_NOT_CONNECT
 
@@ -82,12 +87,7 @@ func (this *TcpConnection) Connect(addr string) bool {
 		this.conn_state != TCP_CONN_STATE_DISCONNECTED {
 		return false
 	}
-	var err error
-	this.net_conn, err = net.Dial("tcp", addr)
-	if err != nil {
-		fmt.Printf("connect failed\n")
-		return false
-	}
+
 	this.conn_state = TCP_CONN_STATE_CONNECTED
 
 	ei := EventInfo{conn_id: this.id, conn_mgr: this.mgr}

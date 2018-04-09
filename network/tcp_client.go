@@ -1,21 +1,38 @@
 package network
 
+import (
+	"fmt"
+	"net"
+)
+
 type TcpClient struct {
-	net_conn *TcpConnection
+	conn     TcpConnection
+	conn_mgr *TcpConnectionMgr
 }
 
-func (this *TcpClient) Init(conn_id uint32, conn_mgr *TcpConnectionMgr) bool {
-	return this.net_conn.Init(TCP_CONNECTION_TYPE_ACTIVE, conn_id, conn_mgr)
+func (this *TcpClient) Init(conn_mgr *TcpConnectionMgr) {
+	this.conn_mgr = conn_mgr
 }
 
 func (this *TcpClient) Connect(addr string) bool {
-	return this.net_conn.Connect(addr)
-}
+	var err error
+	var conn net.Conn
+	conn, err = net.Dial("tcp", addr)
+	if err != nil {
+		fmt.Printf("connect failed\n")
+		return false
+	}
 
-func (this *TcpClient) Start() bool {
-	return this.net_conn.Start()
+	this.conn.Init(conn)
+	this.conn.Start()
+
+	return true
 }
 
 func (this *TcpClient) Send(data []byte) error {
-	return this.net_conn.Send(data)
+	return this.conn.Send(data)
+}
+
+func (this *TcpClient) Close() {
+	this.conn.Close()
 }

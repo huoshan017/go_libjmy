@@ -1,5 +1,6 @@
 package network
 
+/*
 type TcpClientGenerator struct {
 	conn_mgr *TcpConnectionMgr
 	clients  map[*TcpClient]*TcpClient
@@ -30,3 +31,4 @@ func (this *TcpClientGenerator) FreeClient(c *TcpClient) bool {
 	this.conn_mgr.FreeConn(c.net_conn.id)
 	return true
 }
+*/
