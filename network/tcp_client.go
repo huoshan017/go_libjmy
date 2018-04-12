@@ -6,12 +6,7 @@ import (
 )
 
 type TcpClient struct {
-	conn     TcpConnection
-	conn_mgr *TcpConnectionMgr
-}
-
-func (this *TcpClient) Init(conn_mgr *TcpConnectionMgr) {
-	this.conn_mgr = conn_mgr
+	conn *TcpConnection
 }
 
 func (this *TcpClient) Connect(addr string) bool {
@@ -23,7 +18,7 @@ func (this *TcpClient) Connect(addr string) bool {
 		return false
 	}
 
-	this.conn.Init(conn)
+	this.conn.Attach(conn)
 	this.conn.Start()
 
 	return true

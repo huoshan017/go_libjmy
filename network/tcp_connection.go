@@ -35,12 +35,7 @@ type TcpConnection struct {
 	conn_state int
 }
 
-func (this *TcpConnection) Init(conn net.Conn) {
-	this.net_conn = conn
-	this.conn_state = TCP_CONN_STATE_CONNECTED
-}
-
-func (this *TcpConnection) InitWithId(conn_type int, id uint32, conn_mgr *TcpConnectionMgr) bool {
+func (this *TcpConnection) Init(conn_type int, id uint32, conn_mgr *TcpConnectionMgr) bool {
 	this.conn_type = conn_type
 	this.conn_state = TCP_CONN_STATE_NOT_CONNECT
 
@@ -51,6 +46,11 @@ func (this *TcpConnection) InitWithId(conn_type int, id uint32, conn_mgr *TcpCon
 
 	fmt.Printf("connection %d inited\n", id)
 	return true
+}
+
+func (this *TcpConnection) Attach(conn net.Conn) {
+	this.net_conn = conn
+	this.conn_state = TCP_CONN_STATE_CONNECTED
 }
 
 func (this *TcpConnection) SetConnProcessor(conn net.Conn, processor IConnProcessor) {
